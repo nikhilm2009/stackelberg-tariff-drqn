@@ -212,7 +212,7 @@ def run(args):
     loss_ema = None
 
     # ---- Logging / checkpoint paths (support fresh_log + run_tag) ----
-    art_dir = Path("../artifacts")
+    art_dir = Path("artifacts")
     art_dir.mkdir(parents=True, exist_ok=True)
     suffix = f"_{args.run_tag}" if args.run_tag else ""
     log_path = art_dir / f"train_{args.rnn}{suffix}_log.csv"
@@ -440,7 +440,7 @@ if __name__ == "__main__":
     # Checkpoints + logging
     ap.add_argument("--ckpt_interval", type=int, default=20)
     ap.add_argument("--ckpt_prefix", type=str, default="drqn")
-    ap.add_argument("--ckpt_dir", type=str, default="../models")
+    ap.add_argument("--ckpt_dir", type=str, default="models")
     ap.add_argument("--fresh_log", action="store_true", help="Overwrite train/eval CSV logs at start")
     ap.add_argument("--run_tag", type=str, default="", help="Optional tag for unique CSV/ckpt names (e.g., 'u64_h256')")
 
