@@ -1,13 +1,11 @@
 # TariffWar-DRQN  
-Deep Recurrent Reinforcement Learning for a Stackelberg Tariff Game
-This repository implements a Deep Recurrent Q-Network (DRQN) framework for studying a dynamic Stackelberg leader–follower tariff game.  
-A learning leader (government) sets tariffs over time to maximize long-run economic value, while a follower (foreign economy) currently responds via a deterministic best-response rule.The project investigates how temporal memory architectures (GRU vs LSTM) affect long-horizon policy learning in macroeconomic environments with inertia and delayed feedback.
+**Deep Recurrent Reinforcement Learning for a Stackelberg Tariff Game**
+
+This repository implements a Deep Recurrent Q-Network (DRQN) framework for studying a dynamic Stackelberg leader–follower tariff game.  A learning leader (government) sets tariffs over time to maximize long-run economic value, while a follower (foreign economy) currently responds via a deterministic best-response rule.The project investigates how temporal memory architectures (GRU vs LSTM) affect long-horizon policy learning in macroeconomic environments with inertia and delayed feedback.
 
 ## 1. Motivation
 
-Classical Stackelberg models assume static optimization and instantaneous best responses.  
-Real-world economic policy involves delayed responses, path dependence, and strategic reasoning over long horizons.  
-This project explores whether recurrent deep reinforcement learning can recover economically meaningful Stackelberg equilibria — and how architecture choice influences learned policy.
+Classical Stackelberg models assume static optimization and instantaneous best responses.  Real-world economic policy involves delayed responses, path dependence, and strategic reasoning over long horizons.  This project explores whether recurrent deep reinforcement learning can recover economically meaningful Stackelberg equilibria — and how architecture choice influences learned policy.
 
 ## 2. High-Level Overview
 
@@ -29,6 +27,7 @@ This project explores whether recurrent deep reinforcement learning can recover 
 ## 3. Leader Model Architecture
 
 Observation → Encoder (MLP) → GRU or LSTM → Dueling Q-Head
+
 Q(s,a) = V(s) + (A(s,a) − mean(A))
 Key features:
 - GRU or LSTM backend
@@ -62,7 +61,7 @@ tariffwar-drqn/
 ├── artifacts/
 ├── models/
 └── data/
-
+```
 ## 6. Installation & Setup
 
 Requirements:
@@ -72,34 +71,46 @@ Requirements:
 - matplotlib
 
 Using uv:
+```
 uv venv
 source .venv/bin/activate
 uv pip install torch numpy matplotlib
+```
 
 ## 7. Training
 
 GRU:
+```
 uv run python src/train_drqn.py --rnn gru --episodes 400 --unroll 64 --fresh_log --run_tag u64_h128_gru
+```
 
 LSTM:
+```
 uv run python src/train_drqn.py --rnn lstm --episodes 400 --unroll 64 --fresh_log --run_tag u64_h128_lstm
-
-## 8. Key Findings
+```
+## 8. Plot
+```
+uv run plot_all.py --rnn gru --run_tag u64_h128_gru --heat_y X\n
+```
+```
+uv run plot_all.py --rnn lstm --run_tag u64_h128_lstm --heat_y X\n
+```
+## 9. Key Findings
 
 - GRU and LSTM both train stably.
 - GRU learns a moderate tariff policy with higher long-run PV.
 - LSTM tends toward maximal tariffs and lower PV.
 
-## 9. Planned Extensions
+## 10. Planned Extensions
 
 - Learning follower (DQN/DRQN)
 - Alternating Stackelberg training
 - Stochastic follower responses
 
-## 10. License
+## 11. License
 
 MIT License
 
-## 11. Citation
+## 12. Citation
 
 TariffWar-DRQN: Deep Recurrent Reinforcement Learning for a Stackelberg Tariff Game
