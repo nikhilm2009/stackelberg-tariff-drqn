@@ -47,7 +47,7 @@ Constraint:
 burn_in + unroll + 1 ≤ episode_length
 
 ## 5. Repository Structure
-
+```text
 tariffwar-drqn/
 ├── README.md
 ├── src/
@@ -80,6 +80,7 @@ uv pip install torch numpy matplotlib
 
 GRU:
 uv run python src/train_drqn.py --rnn gru --episodes 400 --unroll 64 --fresh_log --run_tag u64_h128_gru
+
 LSTM:
 uv run python src/train_drqn.py --rnn lstm --episodes 400 --unroll 64 --fresh_log --run_tag u64_h128_lstm
 
