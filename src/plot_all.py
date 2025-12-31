@@ -151,7 +151,7 @@ def _load_hidden_vectors(path, episode=None):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--rnn", choices=["gru","lstm"], required=True)
-    ap.add_argument("--art_dir", default="../artifacts")
+    ap.add_argument("--art_dir", default="artifacts")
     ap.add_argument("--run_tag", default="", help="suffix used by trainer --run_tag")
     ap.add_argument("--episode", type=int, default=-1, help="episode for Q-traces/PCA; -1 selects last available")
     ap.add_argument("--bins", type=int, default=20, help="bins for (tau,d) heatmap")
@@ -161,6 +161,7 @@ def main():
 
     suffix = f"_{args.run_tag}" if args.run_tag else ""
     art = Path(args.art_dir)
+    plot = Path("plots")
 
     train_path = art / f"train_{args.rnn}{suffix}_log.csv"
     eval_path  = art / f"eval_{args.rnn}{suffix}_log.csv"
@@ -281,13 +282,13 @@ def main():
             axp.set_title(f"Hidden PCA (ep {ep_for_pca})")
             axp.set_xlabel("PC1"); axp.set_ylabel("PC2")
             plt.tight_layout()
-            out_p = Path(args.out).with_name(Path(args.out).stem + "_pca.png") if args.out else art / f"summary_{args.rnn}{suffix}_pca.png"
+            out_p = Path(args.out).with_name(Path(args.out).stem + "_pca.png") if args.out else plot / f"summary_{args.rnn}{suffix}_pca.png"
             fig2.savefig(out_p)
             print("Saved PCA to", out_p)
     except Exception:
         pass
 
-    out = Path(args.out) if args.out else art / f"summary_{args.rnn}{suffix}.png"
+    out = Path(args.out) if args.out else plot / f"summary_{args.rnn}{suffix}.png"
     fig.savefig(out, dpi=150)
     print("Saved", out)
 
