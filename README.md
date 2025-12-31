@@ -1,10 +1,10 @@
 # TariffWar-DRQN  
 Deep Recurrent Reinforcement Learning for a Stackelberg Tariff Game
 
-This repository implements a **Deep Recurrent Q-Network (DRQN)** framework for studying a dynamic **Stackelberg leader–follower tariff game**.  
-A learning **leader** (government) sets tariffs over time to maximize long-run economic value, while a **follower** (foreign economy) currently responds via a deterministic best-response rule.
+This repository implements a Deep Recurrent Q-Network (DRQN) framework for studying a dynamic Stackelberg leader–follower tariff game.  
+A learning leader (government) sets tariffs over time to maximize long-run economic value, while a follower (foreign economy) currently responds via a deterministic best-response rule.
 
-The project investigates how **temporal memory architectures (GRU vs LSTM)** affect long-horizon policy learning in macroeconomic environments with inertia and delayed feedback.
+The project investigates how temporal memory architectures (GRU vs LSTM) affect long-horizon policy learning in macroeconomic environments with inertia and delayed feedback.
 
 ---
 
@@ -12,7 +12,7 @@ The project investigates how **temporal memory architectures (GRU vs LSTM)** aff
 
 Classical Stackelberg models assume static optimization and instantaneous best responses.  
 Real-world economic policy involves delayed responses, path dependence, and strategic reasoning over long horizons.  
-This project explores whether **recurrent deep reinforcement learning** can recover economically meaningful Stackelberg equilibria — and how architecture choice influences learned policy.
+This project explores whether recurrent deep reinforcement learning can recover economically meaningful Stackelberg equilibria — and how architecture choice influences learned policy.
 
 ---
 
