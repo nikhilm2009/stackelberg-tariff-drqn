@@ -1,10 +1,7 @@
 # TariffWar-DRQN  
 Deep Recurrent Reinforcement Learning for a Stackelberg Tariff Game
-
 This repository implements a Deep Recurrent Q-Network (DRQN) framework for studying a dynamic Stackelberg leader–follower tariff game.  
-A learning leader (government) sets tariffs over time to maximize long-run economic value, while a follower (foreign economy) currently responds via a deterministic best-response rule.
-
-The project investigates how temporal memory architectures (GRU vs LSTM) affect long-horizon policy learning in macroeconomic environments with inertia and delayed feedback.
+A learning leader (government) sets tariffs over time to maximize long-run economic value, while a follower (foreign economy) currently responds via a deterministic best-response rule.The project investigates how temporal memory architectures (GRU vs LSTM) affect long-horizon policy learning in macroeconomic environments with inertia and delayed feedback.
 
 ---
 
@@ -32,24 +29,18 @@ This project explores whether recurrent deep reinforcement learning can recover 
 - State variables: Imports (M), Exports (X), previous tariff, previous depreciation  
 - Dynamics include inertia and adjustment rates  
 - Rewards capture revenue, consumer loss, inflation, and action costs  
-
 ---
-
 ## 3. Leader Model Architecture
 
 Observation → Encoder (MLP) → GRU or LSTM → Dueling Q-Head
-
 Q(s,a) = V(s) + (A(s,a) − mean(A))
-
 Key features:
 - GRU or LSTM backend
 - Dueling architecture
 - Double DQN targets
 - Soft target updates
 - Gradient clipping
-
 ---
-
 ## 4. Experience Replay (Sequence-Based)
 
 - Episode-wise replay buffer
@@ -99,7 +90,6 @@ uv pip install torch numpy matplotlib
 
 GRU:
 uv run python src/train_drqn.py --rnn gru --episodes 400 --unroll 64 --fresh_log --run_tag u64_h128_gru
-
 LSTM:
 uv run python src/train_drqn.py --rnn lstm --episodes 400 --unroll 64 --fresh_log --run_tag u64_h128_lstm
 
@@ -123,8 +113,7 @@ uv run python src/train_drqn.py --rnn lstm --episodes 400 --unroll 64 --fresh_lo
 
 ## 10. License
 
-Specify license.
-
+MIT License
 ---
 
 ## 11. Citation
