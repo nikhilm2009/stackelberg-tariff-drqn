@@ -1,116 +1,177 @@
-# TariffWar-DRQN  
-**Deep Recurrent Reinforcement Learning for a Stackelberg Tariff Game**
+# TariffWar-DRQN
+**FactorDRQN: Recurrent Multi-Agent Reinforcement Learning for a Stackelberg Tariff Conflict**
 
-This repository implements a Deep Recurrent Q-Network (DRQN) framework for studying a dynamic Stackelberg leader–follower tariff game.  A learning leader (government) sets tariffs over time to maximize long-run economic value, while a follower (foreign economy) currently responds via a deterministic best-response rule.The project investigates how temporal memory architectures (GRU vs LSTM) affect long-horizon policy learning in macroeconomic environments with inertia and delayed feedback.
+This repository implements the FactorDRQN architecture studied in:
 
-## 1. Motivation
+> *"From Tabular Q-Learning to Recurrent Multi-Agent Systems: Recovering Strategic Phase Structure in Adaptive Socio-Economic Conflict"*  
+> AIMLSystems 2026, Track 3 — AI-ML–Driven Socio-Economic and Decision Systems
 
-Classical Stackelberg models assume static optimization and instantaneous best responses.  Real-world economic policy involves delayed responses, path dependence, and strategic reasoning over long horizons.  This project explores whether recurrent deep reinforcement learning can recover economically meaningful Stackelberg equilibria — and how architecture choice influences learned policy.
+The project studies whether recurrent multi-agent systems can recover the qualitative phase structure of a two-country Stackelberg tariff conflict under function approximation.
 
-## 2. High-Level Overview
+---
 
-### Agents
-- **Leader (DRQN)**  
-  - Chooses tariff level τ each timestep  
-  - Observes macroeconomic state with partial observability  
-  - Uses sequence replay with burn-in and unroll windows  
+## Architecture
 
-- **Follower (Baseline)**  
-  - Deterministic best-response agent  
-  - Chooses depreciation d to maximize its own instantaneous payoff  
+Two agents interact in a Stackelberg game:
 
-### Environment
-- State variables: Imports (M), Exports (X), previous tariff, previous depreciation  
-- Dynamics include inertia and adjustment rates  
-- Rewards capture revenue, consumer loss, inflation, and action costs  
+- **Leader** — sets tariff τ ∈ {0, …, τ_max} over 6 bins using a GRU-based DRQN
+- **Follower (FactorDRQN)** — responds with depreciation d and retaliation ρ using **factorised Q-heads**:
+  - `Q_d` head: full GRU trunk → dueling head (6 depreciation bins)
+  - `Q_ρ` head: τ/τ_max only → stateless MLP → dueling head (5 retaliation bins)
 
-## 3. Leader Model Architecture
+The key architectural contribution is the **τ-conditional retaliation pathway** — the ρ-head bypasses the GRU entirely, conditioning only on current tariff provocation. This prevents economic-flow updates from overwriting the sparse retaliation signal.
 
-Observation → Encoder (MLP) → GRU or LSTM → Dueling Q-Head
+---
 
-Q(s,a) = V(s) + (A(s,a) − mean(A))
-Key features:
-- GRU or LSTM backend
-- Dueling architecture
-- Double DQN targets
-- Soft target updates
-- Gradient clipping
+## Repository Structure
 
-## 4. Experience Replay (Sequence-Based)
-
-- Episode-wise replay buffer
-- Training samples are contiguous sequences
-- Each sample contains burn-in steps (hidden warmup) and unroll steps (TD loss)
-
-Constraint:
-burn_in + unroll + 1 ≤ episode_length
-
-## 5. Repository Structure
-```text
+```
 tariffwar-drqn/
-├── README.md
 ├── src/
-│   ├── train_drqn.py
-│   ├── drqn_agent.py
-│   ├── recurrent_q_net.py
-│   ├── seq_replay.py
-│   ├── device.py
-│   ├── stackelberg_q3_tariff_econ_sim_drqn.py
-│   ├── plot_all.py
-│   └── plot_gru_lstm.py
-├── artifacts/
-├── models/
-└── data/
+│   ├── recurrent_q_net_v5.py          # RecurrentQNet (leader) + FactorisedFollowerQNet
+│   ├── drqn_agent_v5.py               # DRQNAgent + FactorisedFollowerAgent
+│   ├── stackelberg_q3_tariff_econ_sim_v5.py   # Environment (payoff-first, beta_E, gamma_diplo)
+│   ├── seq_replay.py                  # Sequence replay buffer
+│   │
+│   ├── train_drqn_v5.py               # Single LF training run
+│   ├── train_drqn_PD.py               # Unified phase diagram runner (PD2 + PD6)
+│   ├── train_drqn_pd2_ablation.py     # Ablation study runner (A1 / A2 / A3)
+│   ├── train_drqn_pd2_v3.py           # Naive DRQN baseline (V3, joint action space)
+│   │
+│   ├── plot_drqn_v5.py                # Training diagnostics (5-figure suite)
+│   ├── plot_pd2_ablation_2x2.py       # 2×2 ablation centerpiece figure
+│   ├── plot_pd6_comparison.py         # PD6 side-by-side comparison figure
+│   ├── plot_convergence_inset.py      # 2-panel convergence inset figure
+│   ├── probe_follower_v5.py           # Load checkpoint, probe ρ-rate per τ bin
+│   │
+│   └── v10_pd_ieee_leaderDepr_PD.py   # Tabular V10 phase diagram runner (reference)
+│
+├── models_v5/                         # Training checkpoints and CSV logs
+├── pd_results/                        # Phase diagram CSVs and figures
+├── pd2_ablation_results/              # Ablation study CSVs and figures
+└── README.md
 ```
-## 6. Installation & Setup
 
-Requirements:
-- Python ≥ 3.10
-- PyTorch
-- numpy
-- matplotlib
+---
 
-Using uv:
-```
-uv venv
+## Installation
+
+```bash
+python -m venv .venv
 source .venv/bin/activate
-uv pip install torch numpy matplotlib
+pip install torch numpy matplotlib pandas
 ```
 
-## 7. Training
+---
 
-GRU:
+## Training
+
+**Single training run (LF calibration):**
+```bash
+python src/train_drqn_v5.py
 ```
-uv run python src/train_drqn.py --rnn gru --episodes 400 --unroll 64 --fresh_log --run_tag u64_h128_gru
+
+**Phase diagram sweep — PD2 and PD6:**
+```bash
+python src/train_drqn_PD.py --pds PD2 PD6 --seeds 5 --workers 6
 ```
 
-LSTM:
+**Ablation study:**
+```bash
+# A2 only (new condition — factorised + GRU→ρ-head)
+python src/train_drqn_pd2_ablation.py --ablation A2 --seeds 5 --workers 6
+
+# All three conditions sequentially
+python src/train_drqn_pd2_ablation.py --ablation all --seeds 5 --workers 6
 ```
-uv run python src/train_drqn.py --rnn lstm --episodes 400 --unroll 64 --fresh_log --run_tag u64_h128_lstm
+
+**Naive baseline (A1):**
+```bash
+python src/train_drqn_pd2_v3.py --seeds 5 --workers 6
 ```
-## 8. Plot
+
+---
+
+## Plotting
+
+**Training diagnostics:**
+```bash
+python src/plot_drqn_v5.py --regime lf --rnn gru
+# Output: plots_v5/fig1_training_lf_gru.png ... fig5_episode_lf_gru.png
 ```
-uv run plot_all.py --rnn gru --run_tag u64_h128_gru --heat_y X\n
+
+**2×2 ablation centerpiece figure:**
+```bash
+python src/plot_pd2_ablation_2x2.py \
+    --tabular pd2_tabular_results.csv \
+    --a1      pd2_v3_results.csv \
+    --a2      pd2_a2_results.csv \
+    --a3      pd2_results.csv \
+    --out     fig_pd2_ablation_2x2.png
 ```
+
+**PD6 comparison figure:**
+```bash
+python src/plot_pd6_comparison.py \
+    --tabular fig_pd6_diplomatic_cost_retaliation_tabular.csv \
+    --drqn    pd6_results_drqn.csv \
+    --out     fig_pd6_comparison.png
 ```
-uv run plot_all.py --rnn lstm --run_tag u64_h128_lstm --heat_y X\n
+
+**Convergence inset:**
+```bash
+python src/plot_convergence_inset.py \
+    --steps models_v5/steps_lf_gru.csv \
+    --eval  models_v5/eval_lf_gru.csv \
+    --out   fig_convergence_inset.png
 ```
-## 9. Key Findings
 
-- GRU and LSTM both train stably.
-- GRU learns a moderate tariff policy with higher long-run PV.
-- LSTM tends toward maximal tariffs and lower PV.
+---
 
-## 10. Planned Extensions
+## Key Results
 
-- Learning follower (DQN/DRQN)
-- Alternating Stackelberg training
-- Stochastic follower responses
+| Condition | Architecture | Topology Agreement |
+|---|---|---|
+| A1 — Naive DRQN | Joint 30-action space, shared reward | 57.8% |
+| A2 — Factorised DRQN | Separate heads, GRU→ρ-head | 82.8% |
+| A3 — FactorDRQN (proposed) | τ-conditioned ρ-head | **92.2%** |
 
-## 11. License
+- PD2 (retaliation vs tariff capacity): **92.2%** cell-level agreement with tabular reference
+- PD6 (diplomatic cost vs retaliation): **90.6%** agreement — topology recovery generalises across perturbation axes
 
-MIT License
+---
 
-## 12. Citation
+## Key Hyperparameters
 
-TariffWar-DRQN: Deep Recurrent Reinforcement Learning for a Stackelberg Tariff Game
+| Parameter | Value |
+|---|---|
+| Episodes | 1,200 |
+| Episode length | 256 steps |
+| Burn-in / unroll | 10 / 32 |
+| Leader ε decay | 1.0 → 0.05 over 120k steps |
+| Follower ε decay | 1.0 → 0.05 over 60k steps |
+| Leader replay | 300 episodes |
+| Follower replay | 100 episodes |
+| Hard sync interval | 80 episodes |
+| Reward scale (d-head) | Δ_d = 30 |
+| Spite parameter | β_E = 0.5 |
+| Discount factor | γ = 0.98 |
+
+---
+
+## Phase Diagram Conditions
+
+| PD | X-axis | Y-axis |
+|---|---|---|
+| PD2 | ρ_max (0 → 0.50) | τ_max (0.10 → 0.45) |
+| PD6 | γ_diplo (0 → 3.0) | ρ_max (0 → 0.50) |
+
+Three regime thresholds (mean leader payoff): Deterrence > +15, Escalation < −15, Transition between.
+
+---
+
+## Citation
+
+> *From Tabular Q-Learning to Recurrent Multi-Agent Systems: Recovering Strategic Phase Structure in Adaptive Socio-Economic Conflict*  
+> Submitted to AIMLSystems 2026, Track 3 — AI-ML–Driven Socio-Economic and Decision Systems  
+> *(under review)*
