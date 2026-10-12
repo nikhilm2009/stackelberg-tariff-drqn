@@ -156,6 +156,54 @@ python src/compare_ablation_agreement.py \
 
 ---
 
+## Pre-computed Results
+
+Pre-computed CSVs and figures are included so the paper figures can be reproduced without rerunning training.
+
+```
+pd_results/
+├── fig_pd6_drqn_diplomatic_cost_retaliation.png  # PD6 FactorDRQN phase diagram
+├── pd6_results.csv                                # PD6 10-seed results (FactorDRQN)
+└── tabular_pd6_diplomatic_cost_retaliation.csv    # PD6 tabular reference (from companion repo)
+
+pd2_ablation_results/
+├── fig_pd2_ablation_A0_feedforward.png            # A0 feedforward baseline
+├── fig_pd2_ablation_A1_naive.png                  # A1 Joint DRQN
+├── fig_pd2_ablation_A2_factorised_gru_rho.png     # A2 Recurrent-Factorized
+├── fig_pd2_ablation_A2b_no_noise.png              # FactorDRQN (proposed)
+├── pd2_a0_results.csv                             # A0 10-seed results
+├── pd2_a1_results.csv                             # A1 10-seed results
+├── pd2_a2_results.csv                             # A2 10-seed results
+├── pd2_a2b_no_noise_results.csv                   # FactorDRQN 10-seed results
+└── tabular_pd2_retaliation_vs_tariff.csv          # Tabular reference (from companion repo)
+```
+
+To regenerate the paper figures from these CSVs:
+
+```bash
+# Figure 3 — 2×2 ablation centerpiece
+python src/plot_AIML_fig3_pd2_ablation_2x2.py \
+    --tabular pd2_ablation_results/tabular_pd2_retaliation_vs_tariff.csv \
+    --a1      pd2_ablation_results/pd2_a1_results.csv \
+    --a2      pd2_ablation_results/pd2_a2_results.csv \
+    --a3      pd2_ablation_results/pd2_a2b_no_noise_results.csv \
+    --out     fig_pd2_ablation_2x2.png
+
+# Figure 2 — reference vs feedforward baseline
+python src/plot_AIML_fig_reference_vs_a0.py \
+    --tabular pd2_ablation_results/tabular_pd2_retaliation_vs_tariff.csv \
+    --a0      pd2_ablation_results/pd2_a0_results.csv \
+    --out     fig_pd2_reference_vs_a0.png
+
+# Figure 4 — PD6 robustness
+python src/plot_AIML_fig4_pd6_comparison.py \
+    --tabular pd_results/tabular_pd6_diplomatic_cost_retaliation.csv \
+    --drqn    pd_results/pd6_results.csv \
+    --out     fig_pd6_comparison.png
+```
+
+---
+
 ## Key Results
 
 All numbers computed under the **payoff-primary rule**: majority vote across 10 seeds; ties broken by mean leader payoff threshold (Deterrence > +15, Escalation < −15, Transition between). Applied identically to tabular reference and all DRQN architectures.
